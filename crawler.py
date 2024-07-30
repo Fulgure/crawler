@@ -27,4 +27,19 @@ class Crawler:
                 if not self.get_last_visited(url, 0):
                     self.add_to_last_visited(url, 0)
 
-    
+    def fill_mini_queue(self):
+        self.miniqueue = self.miniqueue + self.bdd.get_all_miniqueue()
+
+    def crawler(self):
+        while True:
+            pass
+
+    def  start(self):
+        threads = []
+        for _ in range(self.max_threads):
+            t = threading.Thread(target=self.crawler)
+            t.start()
+            threads.append(t)
+        
+        for t in threads:
+            t.join()
