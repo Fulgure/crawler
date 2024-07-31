@@ -19,20 +19,85 @@ class Crawler:
         self.last_visited = {}
         self.bdd = BDD()
         self.miniqueue = self.bdd.get_all_miniqueue()
-        self.get_all_ex_last_visited()
+        #self.get_all_ex_last_visited()
         #self.crawled = []
         for url in urls:
             if not self.bdd.check_if_crawled(url):
                 self.bdd.add_to_queue(url, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
-                if not self.get_last_visited(url, 0):
-                    self.add_to_last_visited(url, 0)
+                if not self.bdd.get_last_visited(url, 0):
+                    self.bdd.add_to_last_visited(url, 0)
 
     def fill_mini_queue(self):
         self.miniqueue = self.miniqueue + self.bdd.get_queue(5000)
+    
+    def can_fetch(self, url):
+        try:
+            base_url = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(url))
+            rp = RobotFileParser()
+            rp.set_url(base_url + "/robots.txt")
+            rp.read()
+            return rp.can_fetch(self.user_agent, url)
+        except Exception as e:
+            print(e)
+            return False
+
+    def crawl_page(self, url):
+        try:
+            print("Je crawle ce site: ", url)
+            reponse = requests.get(url, headers={"User-Agent": self.user_agent}, timeout=5)
+            if(reponse.status_code != 200):
+                return
+            soup = BeautifulSoup(reponse.text, "html.parser")
+
+            title = soup.find('title').text if soup.find('title') else ""
+            h1_tags = [tag.text for tag in soup.find_all('h1')]
+            h2_tags = [tag.text for tag in soup.find_all('h2')]
+            description = soup.find('meta', attrs={'name': 'description'})['content'] if soup.find('meta', attrs={'name': 'description'}) else ""
+            keywords = soup.find('meta', attrs={'name': 'keywords'})['content'] if soup.find('meta', attrs={'name': 'keywords'}) else ""
+            text = soup.get_text()
+
+            page_data =  {
+                "url": url,
+                "title": title,
+                "h1_tags": h1_tags,
+                "h2_tags": h2_tags,
+                "description": description,
+                "keywords": keywords,
+                "text": text,
+                "PageRank": 0,
+                "crawled_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+            }
+            self.bdd.save_page(page_data)
+
+            base_url = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(url))
+            links = soup.find_all('a', href=True)
+            all_valid_links = []
+            for link in links:
+                href = link.get('href')
+                if href and not href.startswith('http') and href.startswith('/'):
+                    href = urljoin(base_url, href)
+                if href and href.startswith('http') and not href.endswith('.pdf'):
+                    all_valid_links.append(href)
+                    if not self.bdd.get_last_visited(href, 0):
+                        self.bdd.add_to_last_visited(href, 0)
+                    self.bdd.add_to_queue(href, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
+        except Exception as e:
+            print(e)
+        
+        # Fin de la logique principal du crawler
 
     def crawler(self):
         while True:
-            pass
+            with self.lock:
+                if not self.miniqueue:
+                    self.fill_mini_queue()
+                    if not self.miniqueue:
+                        break
+                url = self.miniqueue.pop()
+            try:
+                self.crawl_page(url)
+            except Exception as e:
+                print(e)
 
     def  start(self):
         threads = []
@@ -43,3 +108,6 @@ class Crawler:
         
         for t in threads:
             t.join()
+
+crawler = Crawler(["https://www.lemonde.fr", "https://google.com", "https://ovh.com", "https://fulgure.fr"], 100)
+crawler.start()
