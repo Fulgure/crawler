@@ -28,7 +28,7 @@ class Crawler:
                     self.add_to_last_visited(url, 0)
 
     def fill_mini_queue(self):
-        self.miniqueue = self.miniqueue + self.bdd.get_all_miniqueue()
+        self.miniqueue = self.miniqueue + self.bdd.get_queue(5000)
 
     def crawler(self):
         while True:
