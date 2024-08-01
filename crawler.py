@@ -56,19 +56,6 @@ class Crawler:
             keywords = soup.find('meta', attrs={'name': 'keywords'})['content'] if soup.find('meta', attrs={'name': 'keywords'}) else ""
             text = soup.get_text()
 
-            page_data =  {
-                "url": url,
-                "title": title,
-                "h1_tags": h1_tags,
-                "h2_tags": h2_tags,
-                "description": description,
-                "keywords": keywords,
-                "text": text,
-                "PageRank": 0,
-                "crawled_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
-            }
-            self.bdd.save_page(page_data)
-
             base_url = '{uri.scheme}://{uri.netloc}'.format(uri=urlparse(url))
             links = soup.find_all('a', href=True)
             all_valid_links = []
@@ -81,6 +68,21 @@ class Crawler:
                     if not self.bdd.get_last_visited(href, 0):
                         self.bdd.add_to_last_visited(href, 0)
                     self.bdd.add_to_queue(href, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
+
+            
+            page_data =  {
+                "url": url,
+                "title": title,
+                "h1_tags": h1_tags,
+                "h2_tags": h2_tags,
+                "description": description,
+                "keywords": keywords,
+                "text": text,
+                "link_to": all_valid_links,
+                "PageRank": 0,
+                "crawled_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
+            }
+            self.bdd.save_page(page_data)
         except Exception as e:
             print(e)
         
