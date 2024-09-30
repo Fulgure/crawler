@@ -1,10 +1,10 @@
-from pymongo import MongoClient, ASCENDING
+from pymongo import MongoClient, ASCENDING, errors
 import time
 
 class BDD:
     def __init__(self):
         # Connexion à MongoDB
-        self.client = MongoClient('localhost', 27017)
+        self.client = MongoClient('mongodb://fulgure_user:Bethk5757@mongo.fulgure.fr:27017')
         # Création d'une nouvelle base de données
         self.db = self.client['fulgure']
         # Création de webpages
