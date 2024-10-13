@@ -1,10 +1,13 @@
 from pymongo import MongoClient, ASCENDING, errors
+from dotenv import load_dotenv
+import os
 import time
 
 class BDD:
     def __init__(self):
+        load_dotenv()
         # Connexion à MongoDB
-        self.client = MongoClient('mongodb://fulgure_user:Bethk5757@mongo.fulgure.fr:27017')
+        self.client = MongoClient(os.getenv("DATABASE_URL"))
         # Création d'une nouvelle base de données
         self.db = self.client['fulgure']
         # Création de webpages

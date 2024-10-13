@@ -43,7 +43,10 @@ class Crawler:
 
     def crawl_page(self, url):
         try:
-            print("Je crawle ce site: ", url)
+            #print("Je crawle ce site: ", url)
+            if self.bdd.check_if_crawled(url):
+                return
+            self.bdd.add_to_crawled(url, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
             reponse = requests.get(url, headers={"User-Agent": self.user_agent}, timeout=5)
             if(reponse.status_code != 200):
                 return
