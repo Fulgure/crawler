@@ -7,11 +7,13 @@ import time
 import re
 import tldextract
 from bdd import BDD
+from indexation import Indexation
 from datetime import datetime
 import socket
 
 class Crawler:
     def __init__(self, urls, max_threads, request_delay=1):
+        self.indexation = Indexation()
         self.lock = threading.Lock()
         self.max_threads = max_threads
         self.request_delay = request_delay
@@ -86,6 +88,10 @@ class Crawler:
                 "crawled_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")
             }
             self.bdd.save_page(page_data)
+            self.indexation.add_number_of_words(url)
+            self.indexation.inverted_index_in_text(url)
+            self.indexation.inverted_index_in_titles(url)
+            self.indexation.page_rank(url)
         except Exception as e:
             print(e)
         

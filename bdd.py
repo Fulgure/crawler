@@ -25,6 +25,8 @@ class BDD:
         # Création de crawled
         self.crawled = self.db['crawled']
         self.crawled.create_index([("url", ASCENDING)], unique=True)
+        self.mots_texte = self.db['mots_texte']
+        self.mots_titles = self.db['mots_titles']
 
     def add_to_queue(self, url, date):
         if not self.queue.find_one({"url": url}):
@@ -56,3 +58,21 @@ class BDD:
     
     def save_page(self, page_data):
         self.webpages.insert_one(page_data)
+    
+    def add_nb_mots(self, page, nb_mots):
+        self.webpages.update_one({"_id": page['_id']}, {"$set": {"nb_mots": nb_mots}})
+    # Récupère un site
+    def get_webpage(self, url):
+        return self.webpages.find_one({"url": url})
+    # Récupère toutes les sites
+    def get_webpages(self):
+        return self.webpages.find()
+    
+    def add_mots_texte(self, data):
+        self.mots_texte.insert_many(data)
+
+    def add_mots_titles(self, data):
+        self.mots_titles.insert_many(data)
+
+    def update_webpage(self, page, page_rank):
+        self.webpages.update_one({'_id': page['_id']}, {'$set': {'PageRank': page_rank}})
