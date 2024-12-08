@@ -42,6 +42,9 @@ class Crawler:
         except Exception as e:
             print(e)
             return False
+    
+    def get_sitemap(self, url):
+        pass
 
     def crawl_page(self, url):
         try:
