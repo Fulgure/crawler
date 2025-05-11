@@ -27,14 +27,24 @@ class BDD:
         self.mots_titles = self.db['mots_titles']
 
     def add_to_queue(self, url, date):
-        if not self.queue.find_one({"url": url}):
-            self.queue.insert_one({"url": url})
+        try:
+            self.queue.insert_one({"url": url, "date": date})
+        except errors.DuplicateKeyError:
+            # Gérer le cas où l'URL existe déjà
+            pass
         
     def add_to_miniqueue(self, url, date):
         self.miniqueue.insert_one({"url": url, "date": date})
         
     def add_to_last_visited(self, url, date):
-        self.last_visited.insert_one({"url": url, "date": date})
+        try:
+            self.last_visited.insert_one({"url": url, "date": date})
+        except errors.DuplicateKeyError:
+            # Gérer le cas où l'URL existe déjà
+            pass
+    
+    def add_to_crawled(self, url, date):
+        self.crawled.insert_one({"url": url, "date": date})
         
     def check_if_crawled(self, url):
         return self.webpages.find_one({"url": url})
