@@ -10,12 +10,15 @@ from bdd import BDD
 from indexation import Indexation
 from datetime import datetime
 import socket
+from dotenv import load_dotenv
+import os
 
 class Crawler:
-    def __init__(self, urls, max_threads, request_delay=1):
+    def __init__(self, urls, request_delay=1):
+        load_dotenv()
         self.indexation = Indexation()
         self.lock = threading.Lock()
-        self.max_threads = max_threads
+        self.max_threads = os.getenv("MAX_THREADS")
         self.request_delay = request_delay
         self.user_agent = "FulgureBotSearch/1.0"
         self.last_visited = {}
@@ -51,7 +54,6 @@ class Crawler:
             #print("Je crawle ce site: ", url)
             if self.bdd.check_if_crawled(url):
                 return
-            self.bdd.add_to_crawled(url, datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f"))
             reponse = requests.get(url, headers={"User-Agent": self.user_agent}, timeout=5)
             if(reponse.status_code != 200):
                 return
@@ -123,5 +125,5 @@ class Crawler:
         for t in threads:
             t.join()
 
-crawler = Crawler(["https://www.lemonde.fr", "https://google.com", "https://ovh.com", "https://fulgure.fr"], 100)
+crawler = Crawler(["https://www.lemonde.fr", "https://google.com", "https://ovh.com", "https://fulgure.fr"])
 crawler.start()
