@@ -18,7 +18,7 @@ class Crawler:
         load_dotenv()
         self.indexation = Indexation()
         self.lock = threading.Lock()
-        self.max_threads = os.getenv("MAX_THREADS")
+        self.max_threads = int(os.getenv("MAX_THREADS"), 10)
         self.request_delay = request_delay
         self.user_agent = "FulgureBotSearch/1.0"
         self.last_visited = {}
