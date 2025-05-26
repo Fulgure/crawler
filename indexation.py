@@ -63,8 +63,6 @@ class Indexation:
     
     def page_rank(self, url, d = 0.85, iteration = 10):
         page_send = self.bdd.get_webpage(url)
-        initial_pr = 1
-        self.bdd.update_webpage(page_send, initial_pr)
         all_pages = list(self.bdd.get_webpages())
 
         for i in range(iteration):

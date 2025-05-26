@@ -13,9 +13,6 @@ class BDD:
         # Création de webpages
         self.webpages = self.db['webpages']
         self.webpages.create_index([("url", ASCENDING)], unique=True)
-        # Création de miniqueue
-        self.miniqueue = self.db['miniqueue']
-        self.miniqueue.create_index([("url", ASCENDING)], unique=True)
         # Création de queue
         self.queue = self.db['queue']
         self.queue.create_index([("url", ASCENDING)], unique=True)
@@ -28,13 +25,11 @@ class BDD:
 
     def add_to_queue(self, url, date):
         try:
-            self.queue.insert_one({"url": url, "date": date})
+            if not self.queue.find_one({"url": url})
+                self.queue.insert_one({"url": url, "date": date})
         except errors.DuplicateKeyError:
             # Gérer le cas où l'URL existe déjà
             pass
-        
-    def add_to_miniqueue(self, url, date):
-        self.miniqueue.insert_one({"url": url, "date": date})
         
     def add_to_last_visited(self, url, date):
         try:
@@ -48,9 +43,6 @@ class BDD:
         
     def check_if_crawled(self, url):
         return self.webpages.find_one({"url": url})
-    
-    def get_all_miniqueue(self):
-        return [x["url"] for x in self.miniqueue.find()]
         
     def get_queue(self, limit):
         urls = [x["url"] for x in self.queue.find().limit(limit)]
@@ -79,5 +71,8 @@ class BDD:
     def add_mots_titles(self, data):
         self.mots_titles.insert_many(data)
 
-    def update_webpage(self, page, page_rank):
-        self.webpages.update_one({'_id': page['_id']}, {'$set': {'PageRank': page_rank}})
+    def get_content(self, url):
+        return self.get_webpage(url)['content']
+
+    def update_webpage(self, page):
+        self.webpages.replace_one({'_id': page['_id']}, page)
